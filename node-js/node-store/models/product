@@ -1,0 +1,12 @@
+// models/product.js
+const connectDB = require('../db');
+
+// 상품 데이터 모델 정의
+async function getProductCollection() {
+    const db = await connectDB();
+    return db.collection('products');
+}
+
+module.exports = {
+    getProductCollection
+};

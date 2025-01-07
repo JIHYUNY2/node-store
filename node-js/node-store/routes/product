@@ -1,0 +1,66 @@
+// routes/product.js
+const express = require('express');
+const { getProductCollection } = require('../models/product');
+const router = express.Router();
+
+// 상품 목록 조회
+router.get('/', async (req, res) => {
+    try {
+        const collection = await getProductCollection();
+        const products = await collection.find().toArray();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: '상품 목록을 가져오지 못했습니다.' });
+    }
+});
+
+
+// 상품 추가
+router.post('/', async (req, res) => {
+  try {
+      const { name, description, price } = req.body;
+      const collection = await getProductCollection();
+      const newProduct = { name, description, price, createdAt: new Date() };
+      const result = await collection.insertOne(newProduct);
+
+      // 삽입된 문서의 _id만 반환하는 방식
+      if (result.acknowledged) {
+          res.status(201).json({ _id: result.insertedId, name, description, price });
+      } else {
+          throw new Error('상품 추가에 실패했습니다.');
+      }
+  } catch (error) {
+      console.error('상품 추가 에러:', error); // 상세한 오류 메시지 출력
+      res.status(500).json({ error: '상품을 추가하지 못했습니다ㅇㅇ.', message: error.message });
+  }
+});
+
+// 상품 수정
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, price } = req.body;
+        const collection = await getProductCollection();
+        const result = await collection.updateOne(
+            { _id: new require('mongodb').ObjectId(id) },
+            { $set: { name, description, price, updatedAt: new Date() } }
+        );
+        res.json({ modifiedCount: result.modifiedCount });
+    } catch (error) {
+        res.status(500).json({ error: '상품을 수정하지 못했습니다.' });
+    }
+});
+
+// 상품 삭제
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const collection = await getProductCollection();
+        const result = await collection.deleteOne({ _id: new require('mongodb').ObjectId(id) });
+        res.json({ deletedCount: result.deletedCount });
+    } catch (error) {
+        res.status(500).json({ error: '상품을 삭제하지 못했습니다.' });
+    }
+});
+
+module.exports = router;
