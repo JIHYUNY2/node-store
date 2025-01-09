@@ -1,5 +1,6 @@
 // index.js
 const express = require('express');
+const path = require('path'); // 경로 조작을 위한 모듈
 const connectDB = require('./db');
 const productRoutes = require('./routes/product');
 
@@ -8,12 +9,17 @@ const PORT = 3000;
 
 // 미들웨어 설정
 app.use(express.json());
-app.use('/products', productRoutes);
+
+// 정적 파일 서빙
+app.use(express.static(path.join(__dirname, 'public'))); // public 폴더의 파일을 정적 파일로 제공
 
 // 루트 경로에 대한 처리
 app.get('/', (req, res) => {
-    res.send('✅ 서버가 정상적으로 작동하고 있습니다.');
+    res.sendFile(path.join(__dirname, 'public', 'index.html')); // 루트 경로에서 index.html 제공
 });
+
+// API 라우트
+app.use('/products', productRoutes);
 
 // 서버 시작
 (async () => {
